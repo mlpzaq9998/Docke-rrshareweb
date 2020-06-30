@@ -1,15 +1,27 @@
-FROM centos:7
-ENV TZ=Asia/Shanghai
+FROM lsiobase/alpine:3.12
 
-ADD http://appdown.rrys.tv/rrshareweb_centos7.tar.gz /rrshareweb.tar.gz
+# set version label
+ARG BUILD_DATE
+ARG VERSION
+LABEL build_version="blog.auskai.win version:- ${VERSION} Build-date:- ${BUILD_DATE}"
+LABEL maintainer="auska"
 
-RUN set -ex && \
-tar -xzf /rrshareweb.tar.gz && rm /rrshareweb.tar.gz && \
-sed -i "s/file.zmzfile.com/file.apicvn.com/g" `grep file.zmzfile.com -rl /rrshareweb/web/build/static/js` && \
-ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && \
-echo ${TZ} > /etc/timezone
+ENV GLIBC_VERSION=2.31-r0 TZ=Asia/Shanghai
 
-VOLUME ["/下载"]
-EXPOSE 3001
+RUN \
+ echo "**** install packages ****" && \
+ apk add --no-cache \
+	wget \
+	libstdc++ && \
+ wget "https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-${GLIBC_VERSION}.apk" && \
+ wget "https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIBC_VERSION}/glibc-bin-${GLIBC_VERSION}.apk" && \
+ sed -i "s/file.zmzfile.com/file.apicvn.com/g" `grep file.zmzfile.com -rl /rrshareweb/web/build/static/js` && \
+ apk add --allow-untrusted glibc-${GLIBC_VERSION}.apk glibc-bin-${GLIBC_VERSION}.apk && \
+ apk del wget
 
-ENTRYPOINT [ "/rrshareweb/rrshareweb" ]
+# copy local files
+COPY root/ /
+
+# ports and volumes
+EXPOSE 3001 6714 30210
+VOLUME /mnt /rrshare

@@ -5,7 +5,7 @@ LABEL MAINTAINER="ZYL"
 
 
 # 配置glibc
-ENV GLIBC_VERSION=2.31-r0
+ENV GLIBC_VERSION=2.32
 
 RUN apk update \
 	&& apk --no-cache add wget libstdc++ tzdata \
